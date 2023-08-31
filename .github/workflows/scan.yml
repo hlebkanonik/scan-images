@@ -1,0 +1,53 @@
+name: Trivy Container Scan
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  trivy_scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          # role-to-assume: arn:aws:iam::123456789012:role/my-github-actions-role
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          mask-password: 'true'
+
+      - name: Set Registry URL
+        run: |
+          echo "REGISTRY_URL=${{ secrets.REGISTRY_URL}}" >> $GITHUB_ENV
+
+      - name: Install Trivy
+        run: |
+          wget https://github.com/aquasecurity/trivy/releases/download/v0.20.0/trivy_0.20.0_Linux-64bit.tar.gz
+          tar zxvf trivy_0.20.0_Linux-64bit.tar.gz
+          sudo mv trivy /usr/local/bin/
+          trivy --version
+
+      - name: Create Report Directory
+        run: |
+          mkdir trivy_reports
+
+      - name: Run Trivy Scan
+        run: |
+          python3 .github/scripts/scan_images.py
+
+      - name: Upload Reports
+        uses: actions/upload-artifact@v2
+        with:
+          name: trivy_reports
+          path: trivy_reports
