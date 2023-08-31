@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }} 
+
 jobs:
   trivy_scan:
     runs-on: ubuntu-latest
