@@ -1,0 +1,6 @@
+[
+    "service-ui:rc-5.10.0",
+    "service-index:rc-5.10.0",
+    "service-auto-analyzer:rc-5.10.0",
+    "service-metrics-gatherer:rc-5.10.0"
+]
